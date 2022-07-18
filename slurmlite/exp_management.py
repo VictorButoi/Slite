@@ -48,7 +48,7 @@ def create_gridsearch(params):
 
     return new_dicts
 
-def run_exps(names, grid_params):
+def run_exps(exp_manager, names, grid_params):
     assert len(names) == len(grid_params), "Each thing in gridsearch must have a name"
 
     PROJECT_PATH = "/persist/S4ndwich"
@@ -65,7 +65,7 @@ def run_exps(names, grid_params):
         tmux_shell(ACTIVATE_VENV)
         #Get the shell command
         hash = str(random.getrandbits(128))
-        run_string, debug_string = get_run_string(names[pi], param, hash)
+        run_string, debug_string = exp_manager.get_run_string(names[pi], param, hash)
         #Run command
         print("Running command:", debug_string)
         tmux_shell(run_string)
