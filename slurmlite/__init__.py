@@ -1,1 +1,1 @@
-from . import exp_management
+from .exp_management import ExperimentManager 
