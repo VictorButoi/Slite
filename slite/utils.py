@@ -2,7 +2,7 @@ import os
 import time
 
 
-def task(c_idx, exp_type, cfg_group, available_gpus):
+def task(c_idx, cfg_group, exp_type, available_gpus):
     gpu_idx = c_idx % len(available_gpus)
     os.environ["CUDA_VISIBLE_DEVICES"] = str(available_gpus[gpu_idx])
     for cfg in cfg_group:

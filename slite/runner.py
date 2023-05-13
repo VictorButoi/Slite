@@ -25,14 +25,17 @@ class SliteRunner:
         # Keep cache of jobs
         self.jobs = []
     
-    def run_exps(self, cfg_list):
-
+    def submit_exps(self, cfg_list):
         cfg_chunks = chunk_cfs(cfg_list, num_gpus=len(self.available_gpus))
         for c_idx, cfg_chunk in enumerate(cfg_chunks):
-            job = self.executor.submit(task, c_idx, self.task_type, cfg_chunk)
+            job = self.executor.submit(task, c_idx, cfg_chunk, self.task_type, self.available_gpus)
             print(f"Submitted job {job.job_id} with {len(cfg_chunk)} configs.")
             time.sleep(2) # Sleep for 2 seconds to avoid submitting too many jobs at once
             self.jobs.append(job)
+
+    def run_exp(self, cfg):
+        exp = self.task_type.from_config(cfg)
+        exp.run()
 
     def kill_jobs(self):
         return None
