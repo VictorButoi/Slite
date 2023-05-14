@@ -1,6 +1,7 @@
 from .utils import chunk_cfs, task
 
 # misc imports
+import os
 import submitit
 import time
 from typing import List
@@ -34,6 +35,10 @@ class SliteRunner:
             self.jobs.append(job)
 
     def run_exp(self, cfg):
+        # Make sure GPUs are visible
+        gpu_list = ','.join(self.available_gpus)
+        os.environ["CUDA_VISIBLE_DEVICES"] = gpu_list
+        # Run experiment
         exp = self.task_type.from_config(cfg)
         exp.run()
 
