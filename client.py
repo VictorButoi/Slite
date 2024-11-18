@@ -190,7 +190,7 @@ def main():
             parser.error("-kill requires a job ID")
         kill_job(args.kill)
     elif args.relaunch:
-        if not args.relanch:
+        if not args.relaunch:
             parser.error("-relaunch requires a job ID")
         relaunch_job(args.relaunch)
     elif args.inspect:
