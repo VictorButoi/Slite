@@ -68,23 +68,33 @@ class SliteJobScheduler:
 
     def submit_job(
         self, 
-        cfg,
+        cfg: Optional[Any] = None,
+        job_info: Optional[Any] = None,
         job_func: Optional[Any] = None,
-        exp_class: Optional[Any] = None
+        exp_class: Optional[Any] = None,
     ):
+        # Exactly one of cfg or job_info must be provided
+        if cfg is None and job_info is None:
+            raise ValueError("Either cfg or job_info must be provided.")
+        if cfg is not None and job_info is not None:
+            raise ValueError("Only one of cfg or job_info should be provided.")
         with self.lock:
-            job_id = str(self.job_counter)
-            self.job_counter += 1
-            job_info = {
-                "job_id": job_id,
-                "cfg": cfg,
-                "job_func": job_func,
-                "exp_class": exp_class,
-                "status": None,  # To be set below
-                "job_gpu": None,
-                "submitit_root": f'{cfg["log"]["root"]}/{cfg["log"]["uuid"]}/submitit'
-            }
-            self.all_jobs[job_id] = job_info
+            # If job_info is None, then make a new job_dict.
+            if job_info is None:
+                job_id = str(self.job_counter)
+                self.job_counter += 1
+                job_info = {
+                    "job_id": job_id,
+                    "cfg": cfg,
+                    "job_func": job_func,
+                    "exp_class": exp_class,
+                    "status": None,  # To be set below
+                    "job_gpu": None,
+                    "submitit_root": f'{cfg["log"]["root"]}/{cfg["log"]["uuid"]}/submitit'
+                }
+                self.all_jobs[job_id] = job_info
+            else:
+                job_id = job_info["job_id"]
 
             job_gpu = self.gpu_manager.get_free_gpu()
             if job_gpu is None:
@@ -96,6 +106,26 @@ class SliteJobScheduler:
                 # GPU available, submit the job
                 job_info["job_gpu"] = job_gpu
                 return self._submit_to_executor(job_id, job_info)
+
+    def relaunch_job(self, job_id):
+        with self.lock:
+            # Check if the job exists
+            if job_id not in self.all_jobs:
+                logging.error(f"Job {job_id} not found.")
+                return False
+            # Check if the job is currently running
+            if job_id in self.running_jobs:
+                logging.error(f"Job {job_id} is currently running and cannot be relaunched.")
+                return False
+            job_info = self.all_jobs[job_id]
+            # Remove any previous job object and error messages
+            job_info.pop('job_object', None)
+            job_info.pop('error', None)
+            # Reset job status and GPU assignment
+            job_info["status"] = None
+            job_info["job_gpu"] = None
+            # Relaunch the job using the submit_job method
+            return self.submit_job(job_info=job_info)
 
     def kill_job(self, job_id):
         with self.lock:
@@ -265,6 +295,27 @@ def submit_job_endpoint():
             "status": "failed",
         }     
     return jsonify({'job_id': job_id, 'status': job_info["status"], 'job_gpu': job_info.get('job_gpu')}), 200
+
+@app.route('/relaunch', methods=['POST'])
+def relaunch_job_endpoint():
+    try: 
+        data = request.get_json()
+        if not data or 'job_id' not in data:
+            return jsonify({'error': 'No job-id provided.'}), 400
+        jid = data['job_id']
+        # Attempt to relaunch the job
+        success = scheduler.relaunch_job(jid)
+        if success:
+            status = f"Job {jid} relaunched."
+            return jsonify({"status": status}), 200
+        else:
+            status = f"Failed to relaunch job {jid}."
+            return jsonify({"status": status}), 400
+    except Exception as e:
+        logging.error(f"Failed to relaunch job with {data.get('job_id', 'unknown')}: {e}")
+        logging.error(traceback.format_exc())
+        status = "Failed to relaunch job due to server error."
+        return jsonify({"status": status}), 500
 
 @app.route('/kill', methods=['POST'])
 def kill_job_endpoint():

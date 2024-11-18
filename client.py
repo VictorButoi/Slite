@@ -16,6 +16,23 @@ def start_server():
     subprocess.run(["python", f"{LOCAL_VARS['SLITE_DIR']}/start_server.py"], cwd=LOCAL_VARS['SLITE_DIR'])
 
 
+def relaunch_job(job_id):
+    url = f"{LOCAL_VARS['SERVER_URL']}/relaunch"
+    data = {'job_id': job_id}
+    try:
+        response = requests.post(url, json=data)
+        if response.status_code == 200:
+            result = response.json()
+            status = result.get('status', 'Status Unknown.')
+            print(status)
+        else:
+            error_message = response.json().get('error', 'No error message provided.')
+            print(f"Failed to relaunch job {job_id}. Server responded with status code {response.status_code}: {error_message}")
+    except requests.exceptions.ConnectionError:
+        print("Failed to connect to the scheduler server. Is it running?")
+        sys.exit(1)
+
+
 def kill_job(job_id):
     url = f"{LOCAL_VARS['SERVER_URL']}/kill"
     data = {'job_id': job_id}
@@ -96,6 +113,8 @@ def list_jobs(status):
         print("Failed to connect to the scheduler server. Is it running?")
         sys.exit(1)
 
+
+# TODO: Fix, shutdown doesn't currently work.
 def shutdown_scheduler():
     url = f"{LOCAL_VARS['SERVER_URL']}/shutdown"
     try:
@@ -108,28 +127,17 @@ def shutdown_scheduler():
         print("Failed to connect to the scheduler server. Is it running?")
         sys.exit(1)
 
+
 def main():
     # Create the parser
     parser = argparse.ArgumentParser(
         description="Local GPU Job Queue Client with Submitit"
     )
     parser.add_argument(
-        '-startup', 
-        action='store_true', 
-        help='Launch the slite job manager'
-    )
-    parser.add_argument(
-        '-list', 
+        '-flush', 
         metavar='STATUS', 
-        nargs='?', 
-        const='all',
         choices=['queued', 'running', 'completed', 'failed', 'cancelled', 'all'], 
-        help='List jobs based on their status (default is all)'
-    )
-    parser.add_argument(
-        '-shutdown', 
-        action='store_true', 
-        help='Shutdown the scheduler server'
+        help='Flush jobs based on their status'
     )
     parser.add_argument(
         '-kill', 
@@ -144,10 +152,28 @@ def main():
         help='Inspect a job with the given ID'
     )
     parser.add_argument(
-        '-flush', 
+        '-list', 
         metavar='STATUS', 
+        nargs='?', 
+        const='all',
         choices=['queued', 'running', 'completed', 'failed', 'cancelled', 'all'], 
-        help='Flush jobs based on their status'
+        help='List jobs based on their status (default is all)'
+    )
+    parser.add_argument(
+        '-relaunch', 
+        metavar='JOB_ID', 
+        type=str, 
+        help='Relaunch a finished-job with the given ID'
+    )
+    parser.add_argument(
+        '-shutdown', 
+        action='store_true', 
+        help='Shutdown the scheduler server'
+    )
+    parser.add_argument(
+        '-startup', 
+        action='store_true', 
+        help='Launch the slite job manager'
     )
 
     # Parse arguments
@@ -163,6 +189,10 @@ def main():
         if not args.kill:
             parser.error("-kill requires a job ID")
         kill_job(args.kill)
+    elif args.relaunch:
+        if not args.relanch:
+            parser.error("-relaunch requires a job ID")
+        relaunch_job(args.relaunch)
     elif args.inspect:
         if not args.inspect:
             parser.error("-inspect requires a job ID")
