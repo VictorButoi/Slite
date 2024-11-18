@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "slite" 
+version = "0.1.0"
+authors = [
+    { name = "Victor Butoi", email = "vbutoi@mit.edu" },
+]
+description = "A lightweight Slurm alternative for GPU job management on individual servers"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "flask",
+    "requests",
+    "submitit",
+    "pydantic",
+    "nvidia-ml-py3",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/VictorButoi/slite"
+"Bug Tracker" = "https://github.com/VictorButoi/slite/issues"
+
+[project.scripts]
+slite = "slite.client:main"
