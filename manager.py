@@ -68,33 +68,23 @@ class SliteJobScheduler:
 
     def submit_job(
         self, 
-        cfg: Optional[Any] = None,
-        job_info: Optional[Any] = None,
+        cfg,
         job_func: Optional[Any] = None,
-        exp_class: Optional[Any] = None,
+        exp_class: Optional[Any] = None
     ):
-        # Exactly one of cfg or job_info must be provided
-        if cfg is None and job_info is None:
-            raise ValueError("Either cfg or job_info must be provided.")
-        if cfg is not None and job_info is not None:
-            raise ValueError("Only one of cfg or job_info should be provided.")
         with self.lock:
-            # If job_info is None, then make a new job_dict.
-            if job_info is None:
-                job_id = str(self.job_counter)
-                self.job_counter += 1
-                job_info = {
-                    "job_id": job_id,
-                    "cfg": cfg,
-                    "job_func": job_func,
-                    "exp_class": exp_class,
-                    "status": None,  # To be set below
-                    "job_gpu": None,
-                    "submitit_root": f'{cfg["log"]["root"]}/{cfg["log"]["uuid"]}/submitit'
-                }
-                self.all_jobs[job_id] = job_info
-            else:
-                job_id = job_info["job_id"]
+            job_id = str(self.job_counter)
+            self.job_counter += 1
+            job_info = {
+                "job_id": job_id,
+                "cfg": cfg,
+                "job_func": job_func,
+                "exp_class": exp_class,
+                "status": None,  # To be set below
+                "job_gpu": None,
+                "submitit_root": f'{cfg["log"]["root"]}/{cfg["log"]["uuid"]}/submitit'
+            }
+            self.all_jobs[job_id] = job_info
 
             job_gpu = self.gpu_manager.get_free_gpu()
             if job_gpu is None:
@@ -124,8 +114,18 @@ class SliteJobScheduler:
             # Reset job status and GPU assignment
             job_info["status"] = None
             job_info["job_gpu"] = None
+
             # Relaunch the job using the submit_job method
-            return self.submit_job(job_info=job_info)
+            job_gpu = self.gpu_manager.get_free_gpu()
+            if job_gpu is None:
+                # No GPU available, queue the job
+                job_info["status"] = "queued"
+                self.job_queue.put(job_id)
+                return job_id  # Return the job_id to the user
+            else:
+                # GPU available, submit the job
+                job_info["job_gpu"] = job_gpu
+                return self._submit_to_executor(job_id, job_info)
 
     def kill_job(self, job_id):
         with self.lock:
