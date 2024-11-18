@@ -1,12 +1,20 @@
 # run_jobs.py
 
 # misc imports
+import importlib
 import os
 import sys
 from typing import Any, Optional
 from pydantic import validate_arguments
-# local imports
-from pylot.experiment.util import absolute_import
+
+def absolute_import(reference):
+    module, _, attr = reference.rpartition(".")
+    if importlib.util.find_spec(module) is not None:
+        module = importlib.import_module(module)
+        if hasattr(module, attr):
+            return getattr(module, attr)
+
+    raise ImportError(f"Could not import {reference}")
 
 
 @validate_arguments(config=dict(arbitrary_types_allowed=True))
