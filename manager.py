@@ -11,6 +11,7 @@ from typing import Optional, Any
 from flask import Flask, request, jsonify
 from pynvml import nvmlInit, nvmlDeviceGetCount, nvmlShutdown, nvmlDeviceGetHandleByIndex
 # local imports
+from registry import LOCAL_VARS
 from run_jobs import run_job , run_exp
 
 
@@ -364,4 +365,5 @@ def get_jobs():
 
 if __name__ == '__main__':
     # Run the Flask app
-    app.run(host='0.0.0.0', port=5000, threaded=True)
+    port = LOCAL_VARS['SERVER_URL'].split(':')[-1]
+    app.run(host='0.0.0.0', port=port, threaded=True)
