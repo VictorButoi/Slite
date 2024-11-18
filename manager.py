@@ -11,7 +11,7 @@ from typing import Optional, Any
 from flask import Flask, request, jsonify
 from pynvml import nvmlInit, nvmlDeviceGetCount, nvmlShutdown, nvmlDeviceGetHandleByIndex
 # local imports
-from registry import LOCAL_VARS
+from .registry import LOCAL_VARS
 from run_jobs import run_job , run_exp
 
 
@@ -316,7 +316,7 @@ def flush_jobs_endpoint():
                     else:
                         scheduler.clear_job(cat_jid)
             # Capitalize j_status for the response
-            status = f"{j_status.capitalize} jobs flushed."
+            status = f"{j_status.capitalize()} jobs flushed."
             return jsonify({"status": status}), 200
         except Exception as e:
             status = f"Failed to flush {j_status} jobs."
