@@ -8,7 +8,7 @@ import requests
 import subprocess
 from datetime import datetime
 # local imports
-from .registry import LOCAL_VARS
+from slite.registry import LOCAL_VARS
 
 def is_server_running():
     try:

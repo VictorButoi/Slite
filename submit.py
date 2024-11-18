@@ -7,7 +7,7 @@ import requests
 from typing import Any, List, Optional
 from pydantic import validate_arguments
 # local imports
-from .registry import LOCAL_VARS
+from slite.registry import LOCAL_VARS
 
 
 @validate_arguments(config=dict(arbitrary_types_allowed=True))

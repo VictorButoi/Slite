@@ -8,7 +8,7 @@ import requests
 import subprocess
 from pprint import pprint   
 # local imports
-from .registry import LOCAL_VARS
+from slite.registry import LOCAL_VARS
 
 
 def start_server():

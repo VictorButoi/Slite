@@ -11,7 +11,7 @@ from typing import Optional, Any
 from flask import Flask, request, jsonify
 from pynvml import nvmlInit, nvmlDeviceGetCount, nvmlShutdown, nvmlDeviceGetHandleByIndex
 # local imports
-from .registry import LOCAL_VARS
+from slite.registry import LOCAL_VARS
 from run_jobs import run_job , run_exp
 
 
