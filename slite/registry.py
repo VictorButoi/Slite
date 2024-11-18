@@ -1,5 +1,5 @@
 LOCAL_VARS = {
     "SERVER_URL": 'http://localhost:5000',
-    "SLITE_DIR": '/storage/vbutoi/libraries/slite',
+    "SLITE_DIR": '/storage/vbutoi/libraries/slite/slite',
     "SCRATCH_DIR": '/storage/vbutoi/scratch/slite' 
 }

@@ -11,8 +11,8 @@ from typing import Optional, Any
 from flask import Flask, request, jsonify
 from pynvml import nvmlInit, nvmlDeviceGetCount, nvmlShutdown, nvmlDeviceGetHandleByIndex
 # local imports
+import slite.runner as slunner
 from slite.registry import LOCAL_VARS
-from run_jobs import run_job , run_exp
 
 
 app = Flask(__name__)
@@ -196,13 +196,13 @@ class SliteJobScheduler:
 
         if exp_class is not None:
             job = executor.submit(
-                run_exp, 
+                slunner.run_exp, 
                 exp_class=exp_class,
                 **submit_kwargs
             )
         else:
             job = executor.submit(
-                run_job, 
+                slunner.run_job, 
                 job_func=job_func,
                 **submit_kwargs
             )
