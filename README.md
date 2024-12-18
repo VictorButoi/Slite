@@ -5,8 +5,8 @@
 ## Installation
 
 ```bash
-git clone https://github.com/VictorButoi/slite.git
-cd slite
+git clone https://github.com/VictorButoi/Slite.git
+cd Slite
 pip install -e .
 ```
 
