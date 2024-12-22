@@ -7,6 +7,7 @@ import sys
 from typing import Any, Optional
 from pydantic import validate_arguments
 
+
 def absolute_import(reference):
     module, _, attr = reference.rpartition(".")
     if importlib.util.find_spec(module) is not None:
@@ -23,14 +24,6 @@ def run_exp(
     config: Any,
     available_gpus: Optional[int] = None,
 ):
-    # Important imports, otherwise the processes will not be able to import the necessary modules
-    sys.path.append('/storage/vbutoi/projects')
-    sys.path.append('/storage/vbutoi/projects/ESE')
-    # Regular schema dictates that we put DATAPATH
-    os.environ['DATAPATH'] = ':'.join((
-        '/storage',
-        '/storage/vbutoi/datasets'
-    ))
     # Set the visible gpu.
     if available_gpus is not None:
         os.environ["CUDA_VISIBLE_DEVICES"] = str(available_gpus)
@@ -49,14 +42,6 @@ def run_job(
     config: Any,
     available_gpus: Optional[int] = None 
 ):
-    # Important imports, otherwise the processes will not be able to import the necessary modules
-    sys.path.append('/storage/vbutoi/projects')
-    sys.path.append('/storage/vbutoi/projects/ESE')
-    # Regular schema dictates that we put DATAPATH
-    os.environ['DATAPATH'] = ':'.join((
-        '/storage',
-        '/storage/vbutoi/datasets'
-    ))
     # Set the visible gpu.
     if available_gpus is not None:
         os.environ["CUDA_VISIBLE_DEVICES"] = str(available_gpus)
