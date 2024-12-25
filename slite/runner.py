@@ -1,9 +1,9 @@
 # run_jobs.py
 
 # misc imports
-import importlib
 import os
 import sys
+import importlib
 from typing import Any, Optional
 from pydantic import validate_arguments
 
@@ -24,6 +24,11 @@ def run_exp(
     config: Any,
     available_gpus: Optional[int] = None,
 ):
+    # Important imports, otherwise the processes will not be able to import the necessary modules
+    for sys_path in config['experiment'].get('sys_paths', []):
+        sys.path.append(sys_path)
+    # Regular schema dictates that we put DATAPATH
+    os.environ['DATAPATH'] = ':'.join(config['experiment'].get('data_paths', []))
     # Set the visible gpu.
     if available_gpus is not None:
         os.environ["CUDA_VISIBLE_DEVICES"] = str(available_gpus)
@@ -42,6 +47,11 @@ def run_job(
     config: Any,
     available_gpus: Optional[int] = None 
 ):
+    # Important imports, otherwise the processes will not be able to import the necessary modules
+    for sys_path in config['experiment'].get('sys_paths', []):
+        sys.path.append(sys_path)
+    # Regular schema dictates that we put DATAPATH
+    os.environ['DATAPATH'] = ':'.join(config['experiment'].get('data_paths', []))
     # Set the visible gpu.
     if available_gpus is not None:
         os.environ["CUDA_VISIBLE_DEVICES"] = str(available_gpus)
