@@ -2,6 +2,7 @@
 
 # misc imports
 import queue
+import GPUtil
 import logging
 import submitit
 import threading
@@ -19,14 +20,26 @@ app = Flask(__name__)
 
 
 class SliteGPUManager:
-    def __init__(self):
+
+    def __init__(self, idle_gpu_memory=10):
         nvmlInit()
         self.num_gpus = nvmlDeviceGetCount()
         self.gpu_handles = [nvmlDeviceGetHandleByIndex(i) for i in range(self.num_gpus)]
         self.gpu_status = [True] * self.num_gpus  # True means free
+        self.idle_gpu_memory = idle_gpu_memory
 
     def get_free_gpu(self):
-        for i, status in enumerate(self.gpu_status):
+        # TODO: Replace with a mechanism that checks without the hacks.
+        gpu_objects = GPUtil.getGPUs()
+        gpu_memory_free = []
+        for gpu in gpu_objects:
+            gpu_is_free = (gpu.memoryUsed <= self.idle_gpu_memory)
+            gpu_memory_free.append(gpu_is_free)
+        
+        # The current gpu status will be a combination of the gpu_status and the gpu_memory_free
+        current_gpu_status = [a and b for a, b in zip(self.gpu_status, gpu_memory_free)]
+
+        for i, status in enumerate(current_gpu_status):
             if status:
                 self.gpu_status[i] = False
                 return i
