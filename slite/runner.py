@@ -1,5 +1,8 @@
 # run_jobs.py
 
+# torch imports
+import torch
+import torch.multiprocessing as mp
 # misc imports
 import os
 import sys
@@ -38,7 +41,14 @@ def run_exp(
     # NOTE: config must be a pylot 'Config' object.
     exp = exp_class.from_config(config, uuid=config['log']['uuid'])
     # Run the experiment.
-    exp.run()
+    if config['train'].get('fsdp', False):
+        WORLD_SIZE = torch.cuda.device_count()
+        if WORLD_SIZE < 1:
+            raise ValueError("No GPUs available for distributed training.")
+        # Pass the world size as part of the args tuple
+        mp.spawn(exp.run, args=(WORLD_SIZE), nprocs=WORLD_SIZE, join=True)
+    else:
+        exp.run()
 
 
 @validate_arguments(config=dict(arbitrary_types_allowed=True))
