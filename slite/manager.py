@@ -79,20 +79,16 @@ class SliteJobScheduler:
             self.running_jobs.pop(job_id, None)
             self.completed_jobs.pop(job_id, None)
 
-    def submit_job(
-        self, 
-        cfg,
-        job_func: Optional[Any] = None,
-        exp_class: Optional[Any] = None
-    ):
+    def submit_job(self, data_obj: dict):
+        cfg = data_obj['config']
         with self.lock:
             job_id = str(self.job_counter)
             self.job_counter += 1
             job_info = {
                 "job_id": job_id,
                 "cfg": cfg,
-                "job_func": job_func,
-                "exp_class": exp_class,
+                "job_func": data_obj.get('job_func', None),
+                "exp_class": data_obj.get('exp_class', None),
                 "status": None,  # To be set below
                 "job_gpu": None,
                 "submitit_root": f'{cfg["log"]["root"]}/{cfg["log"]["uuid"]}/submitit'
@@ -294,11 +290,7 @@ def submit_job_endpoint():
         if not data or 'config' not in data:
             return jsonify({'error': 'No config provided.'}), 400
         # Submit the job
-        job_id = scheduler.submit_job(
-            cfg=data['config'],
-            job_func=data.get('job_func', None),
-            exp_class=data.get('exp_class', None)
-        )
+        job_id = scheduler.submit_job(data_obj=data)
         job_info = scheduler.all_jobs[job_id]
     except Exception as e:
         logging.error(f"Failed to submit job {job_id}: {e}")
