@@ -23,7 +23,6 @@ def absolute_import(reference):
 
 @validate_arguments(config=dict(arbitrary_types_allowed=True))
 def run_exp(
-    exp_class: Any,
     config: Any,
     available_gpus: Optional[int] = None,
 ):
@@ -36,8 +35,7 @@ def run_exp(
     if available_gpus is not None:
         os.environ["CUDA_VISIBLE_DEVICES"] = str(available_gpus)
     # If exp_class is a string, them we need to import it
-    if isinstance(exp_class, str):
-        exp_class = absolute_import(exp_class)
+    exp_class = absolute_import(config['experiment']['_class'])
     # NOTE: config must be a pylot 'Config' object.
     exp = exp_class.from_config(config, uuid=config['log']['uuid'])
     # Run the experiment.

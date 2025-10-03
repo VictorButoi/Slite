@@ -90,7 +90,6 @@ class SliteJobScheduler:
                 "job_id": job_id,
                 "cfg": cfg,
                 "job_func": data_obj.get('job_func', None),
-                "exp_class": data_obj.get('exp_class', None),
                 "status": None,  # To be set below
                 "job_gpu": None,
                 "submitit_root": f'{cfg["log"]["root"]}/{cfg["log"]["uuid"]}/submitit'
@@ -194,7 +193,6 @@ class SliteJobScheduler:
     def _submit_to_executor(self, job_id, job_info):
         cfg = job_info["cfg"]
         job_func = job_info["job_func"]
-        exp_class = job_info["exp_class"]
         job_gpu = job_info["job_gpu"]
 
         executor = submitit.LocalExecutor(job_info['submitit_root'])
@@ -213,16 +211,15 @@ class SliteJobScheduler:
             "available_gpus": job_gpu
         }
 
-        if exp_class is not None:
+        if job_func is not None:
             job = executor.submit(
-                slunner.run_exp, 
-                exp_class=exp_class,
+                slunner.run_job, 
+                job_func=job_func,
                 **submit_kwargs
             )
         else:
             job = executor.submit(
-                slunner.run_job, 
-                job_func=job_func,
+                slunner.run_exp, 
                 **submit_kwargs
             )
 

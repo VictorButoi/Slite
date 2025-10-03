@@ -16,14 +16,8 @@ def submit_jobs(
     submit_cfg: dict,
     config_list: List[Any],
     job_func: Optional[Any] = None,
-    exp_class: Optional[Any] = None,
 ):
-    # Precisely one of exp_class or job_func must be defined.
-    assert (exp_class is not None) ^ (job_func is not None), \
-        "Exactly one of exp_class or job_func must be defined."
     # We might have to convert exp_class and job_func to strings.
-    if exp_class is not None and not isinstance(exp_class, str):
-        exp_class = f"{exp_class.__module__}.{exp_class.__name__}"
     if job_func is not None and not isinstance(job_func, str):
         job_func = f"{job_func.__module__}.{job_func.__name__}"
     
@@ -41,9 +35,7 @@ def submit_jobs(
     else:
         url = f"{LOCAL_VARS['SERVER_URL']}/submit"
         # If exp_class is defined, then we need to submit an experiment; otherwise, we need to submit a job!
-        if exp_class is not None:
-            submit_cfg['exp_class'] = exp_class
-        else:
+        if job_func is not None:
             submit_cfg['job_func'] = job_func
         # Iteratre over the config list and submit each job.
         for cfg in config_list:
