@@ -1,6 +1,8 @@
 # scheduler_server.py
 
 # misc imports
+import sys
+import os
 import queue
 import GPUtil
 import logging
@@ -197,6 +199,14 @@ class SliteJobScheduler:
 
         executor = submitit.LocalExecutor(job_info['submitit_root'])
         executor.update_parameters(**self.default_executer_params)
+        
+        # Ensure subprocess uses the same Python environment as the parent
+        env = os.environ.copy()
+        env["PYTHONPATH"] = os.pathsep.join(sys.path)
+        # Preserve the current Python executable path
+        if hasattr(sys, 'executable'):
+            env["PYTHON_EXECUTABLE"] = sys.executable
+        executor.update_parameters(env=env)
 
         submit_kwargs = {
             "config": cfg,

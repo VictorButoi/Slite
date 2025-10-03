@@ -13,7 +13,16 @@ from slite.registry import LOCAL_VARS
 
 def start_server():
     # Run the scheduler_server.py file in the slite directory.
-    subprocess.run(["python", f"{LOCAL_VARS['SLITE_DIR']}/start_server.py"], cwd=LOCAL_VARS['SLITE_DIR'])
+    # Ensure the subprocess inherits the current environment
+    env = os.environ.copy()
+    env["PYTHONPATH"] = os.pathsep.join(sys.path)
+    if hasattr(sys, 'executable'):
+        env["PYTHON_EXECUTABLE"] = sys.executable
+    subprocess.run(
+        [sys.executable, f"{LOCAL_VARS['SLITE_DIR']}/start_server.py"], 
+        cwd=LOCAL_VARS['SLITE_DIR'],
+        env=env
+    )
 
 
 def relaunch_job(job_id):
