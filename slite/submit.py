@@ -8,6 +8,7 @@ import requests
 from typing import Any, List, Optional, Literal
 from pydantic import validate_arguments
 # local imports
+from slite.runner import run_exp
 from slite.registry import LOCAL_VARS
 
 
@@ -24,11 +25,10 @@ def submit_jobs(
     if submit_cfg['mode'] == "slurm":
         for cfg in config_list:
             try:
-                executor = submitit.AutoExecutor(folder=cfg['submitit_root'])
-                executor.update_parameters(**submit_cfg['executor_params'])
-
-                job = executor.submit(eval(job_func), cfg, available_gpus=submit_cfg['available_gpus'])
-                print(f"--> Submitted job with ID: {job.job_id} and config: {cfg}")
+                executor = submitit.AutoExecutor(folder=cfg['log']['root'])
+                executor.update_parameters(**submit_cfg['slurm_args'])
+                job = executor.submit(run_exp, cfg)
+                print(f"--> Submitted job with ID: {job.job_id}.")
                 time.sleep(submit_cfg.get('submission_delay', 0.0))
             except Exception as e:
                 print(f"Failed to submit job with config: {cfg}. Error: {e}")
