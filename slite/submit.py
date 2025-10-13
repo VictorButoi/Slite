@@ -1,11 +1,10 @@
-# submit.py
-
 # misc imports
 import sys
 import time
 import submitit
 import requests
-from typing import Any, List, Optional, Literal
+from pathlib import Path
+from typing import Any, List, Optional
 from pydantic import validate_arguments
 # local imports
 from slite.runner import run_exp
@@ -25,7 +24,9 @@ def submit_jobs(
     if submit_cfg['mode'] == "slurm":
         for cfg in config_list:
             try:
-                executor = submitit.AutoExecutor(folder=cfg['log']['root'])
+                log_root = Path(cfg['log']['root'])
+                ae_path = log_root / cfg['log']['uuid'] / "submitit"
+                executor = submitit.AutoExecutor(folder=ae_path)
                 executor.update_parameters(**submit_cfg['slurm_args'])
                 job = executor.submit(run_exp, cfg)
                 print(f"--> Submitted job with ID: {job.job_id}.")
