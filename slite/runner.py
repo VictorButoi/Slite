@@ -30,7 +30,11 @@ def run_exp(
     for sys_path in config['experiment'].get('sys_paths', []):
         sys.path.append(sys_path)
     # Regular schema dictates that we put DATAPATH
-    os.environ['DATAPATH'] = ':'.join(config['experiment'].get('data_paths', []))
+    data_paths = config['experiment'].get('data_paths', None)
+    if data_paths is None:
+        single = config['experiment'].get('data_path', None)
+        data_paths = [single] if single else []
+    os.environ['DATAPATH'] = ':'.join(data_paths)
     # Set the visible gpu.
     if available_gpus is not None:
         os.environ["CUDA_VISIBLE_DEVICES"] = str(available_gpus)
@@ -59,7 +63,11 @@ def run_job(
     for sys_path in config['experiment'].get('sys_paths', []):
         sys.path.append(sys_path)
     # Regular schema dictates that we put DATAPATH
-    os.environ['DATAPATH'] = ':'.join(config['experiment'].get('data_paths', []))
+    data_paths = config['experiment'].get('data_paths', None)
+    if data_paths is None:
+        single = config['experiment'].get('data_path', None)
+        data_paths = [single] if single else []
+    os.environ['DATAPATH'] = ':'.join(data_paths)
     # Set the visible gpu.
     if available_gpus is not None:
         os.environ["CUDA_VISIBLE_DEVICES"] = str(available_gpus)

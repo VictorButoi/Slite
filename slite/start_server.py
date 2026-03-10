@@ -34,7 +34,7 @@ def start_server():
                 env["PYTHON_EXECUTABLE"] = sys.executable
             
             # Use the virtual environment's Python executable
-            venv_python = "/local/vbutoi/envs/diffdrr/bin/python"
+            venv_python = "/local/vbutoi/envs/omni/bin/python"
             # venv_python = os.path.join(LOCAL_VARS.get("VENV_PATH", ""), "bin", "python")
             # if not os.path.exists(venv_python):
             #     # Fallback to current Python if venv path not found

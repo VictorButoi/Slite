@@ -57,7 +57,11 @@ def submit_jobs(
                     else:
                         raise ValueError()
                 else:
-                    print(f"Failed to submit job: {response.json().get('error')}")
+                    try:
+                        error_detail = response.json().get('error', response.text)
+                    except Exception:
+                        error_detail = response.text or f"(empty body)"
+                    print(f"Failed to submit job (HTTP {response.status_code}): {error_detail}")
             except requests.exceptions.ConnectionError:
                 print("Failed to connect to the scheduler server. Is it running?")
                 sys.exit(1)
